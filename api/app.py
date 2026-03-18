@@ -26,8 +26,8 @@ class JobInput(BaseModel):
     is_remote_friendly: int
     is_llm_role: int
 
-    class Config:
-        schema_extra = {
+    model_config = {
+        "json_schema_extra" : {
             "example": {
                 "job_title": "AI Engineer",
                 "job_category": "Machine Learning",
@@ -38,9 +38,9 @@ class JobInput(BaseModel):
                 "remote_work": "Remote",
                 "company_size": "Enterprise",
                 "industry": "Technology",
-                "ai_salary_premium_pct": 20.0,
+                "ai_salary_premium_pct": 2.0,
                 "demand_score": 85,
-                "demand_growth_yoy_pct": 12.5,
+                "demand_growth_yoy_pct": 8.2,
                 "benefits_score_10": 8,
                 "posting_year": 2025,
                 "posting_month": 6,
@@ -49,6 +49,7 @@ class JobInput(BaseModel):
                 "is_llm_role": 1
             }
         }
+    }
 
 @app.post("/predict_salary")
 def predict_salary(job_input: JobInput):
