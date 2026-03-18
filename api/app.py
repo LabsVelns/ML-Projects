@@ -26,6 +26,29 @@ class JobInput(BaseModel):
     is_remote_friendly: int
     is_llm_role: int
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "job_title": "AI Engineer",
+                "job_category": "Machine Learning",
+                "experience_level": "Senior",
+                "years_of_experience": 5.0,
+                "education_required": "Masters",
+                "country": "USA",
+                "remote_work": "Remote",
+                "company_size": "Enterprise",
+                "industry": "Technology",
+                "ai_salary_premium_pct": 20.0,
+                "demand_score": 85,
+                "demand_growth_yoy_pct": 12.5,
+                "benefits_score_10": 8,
+                "posting_year": 2025,
+                "posting_month": 6,
+                "is_senior": 1,
+                "is_remote_friendly": 1,
+                "is_llm_role": 1
+            }
+        }
 
 @app.post("/predict_salary")
 def predict_salary(job_input: JobInput):
