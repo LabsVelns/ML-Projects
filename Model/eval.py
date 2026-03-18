@@ -1,12 +1,13 @@
 import joblib
 import pickle
 import pandas as pd
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score, precision_score, recall_score, mean_squared_error, mean_absolute_error, r2_score
+from sklearn.model_selection import train_test_split
 
 # paths
-MODEL_PATH = "Model\xgb_salary_pipeline_best.pkl"
-PREPROCESSOR_PATH = "Model\OneHotEncoder_categories.pkl"
-# TEST_DATA_PATH = "data/processed/test.csv"
+MODEL_PATH = "Model/xgb_salary_pipeline_best.pkl"
+PREPROCESSOR_PATH = "Model/OneHotEncoder_categories.pkl"
+# TEST_DATA_PATH = r"data/processed/test.csv"
 
 def load_model():
     model = joblib.load(MODEL_PATH)
@@ -33,7 +34,7 @@ def encode_remote(x):
     else:
         return 0
     
-def preprocess(df,encoder):
+def preprocess(df, encoder):
     exp_order = {'junior': 0, 'mid': 1, 'senior': 2, 'lead': 3}
     edu_order = {'bootcamp/self-taught': 0, 'associate': 1, 'bachelor': 2, 'master': 3, 'phd': 4}
     company_size_order = {'startup': 0, 'sme': 1, 'mid': 2, 'enterprise': 3, 'big': 4}
@@ -52,12 +53,42 @@ def preprocess(df,encoder):
     df['education_required'] = df['education_required'].map(edu_order).fillna(0)
     df['remote_work'] = df['remote_work'].apply(encode_remote)
 
-    onehot_encoder = load_preprocessor()
-    for col in df.columns:
-        if df[col].dtype == 'str':
-            encoded = onehot_encoder.transform(df[[col]])
-            df = pd.concat([df, pd.DataFrame(encoded.toarray(), columns=onehot_encoder.get_feature_names_out([col]))], axis=1)
-            df.drop(columns=[col], inplace=True)
+    onehot_encoder = encoder
+
+    str_cols = df.select_dtypes(include=['object', 'str']).columns
+    print("String columns to encode:", str_cols)
+    encoded = onehot_encoder.transform(df[str_cols])
+    df = pd.concat([df, pd.DataFrame(encoded.toarray(), columns=onehot_encoder.get_feature_names_out(str_cols))], axis=1)
+    df.drop(columns=str_cols, inplace=True)
     
     return df
 
+model = load_model()
+onehot_encoder = load_preprocessor()
+
+def predict(model, df):
+    x = preprocess(df, onehot_encoder)
+    y_pred = model.predict(x)
+    return y_pred[0]
+
+
+# model = load_model()
+# test = pd.read_csv("test.csv")
+
+# x,y = test.drop(columns=['annual_salary_usd']), test['annual_salary_usd']
+
+# # x_preprocessed = preprocess(x)
+
+# y_pred = model.predict(x)
+
+# mse = mean_squared_error(y, y_pred)
+# rmse = mse ** 0.5
+# mae = mean_absolute_error(y, y_pred)
+# r2 = r2_score(y, y_pred)
+
+# print("Minimum actual salary:", min(y))
+# print("Maximum actual salary:", max(y))
+# print("MSE:", mse)
+# print("RMSE:", rmse)
+# print("MAE:", mae)
+# print("R2:", r2)
